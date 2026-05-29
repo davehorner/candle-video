@@ -35,7 +35,7 @@ func main() {
 		LocalWeights:   *weights,
 		UnifiedWeights: *unified,
 		OutputDir:      *output,
-		GIF:            true,
+		MP4:            true,
 		CPU:            *cpu,
 	})
 	if err != nil {

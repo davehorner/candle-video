@@ -81,6 +81,8 @@ struct VideoGenerateConfig {
     #[serde(default)]
     gif: bool,
     #[serde(default)]
+    mp4: bool,
+    #[serde(default)]
     frames: bool,
     #[serde(default)]
     vae_tiling: bool,
@@ -535,7 +537,7 @@ fn run_generation(cfg: VideoGenerateConfig) -> anyhow::Result<()> {
         }
     }
 
-    if cfg.gif || !cfg.frames {
+    if cfg.gif {
         use gif::{Encoder, Frame, Repeat};
         use std::fs::File;
 
@@ -549,6 +551,11 @@ fn run_generation(cfg: VideoGenerateConfig) -> anyhow::Result<()> {
             frame.delay = 4;
             encoder.write_frame(&frame)?;
         }
+    }
+
+    if cfg.mp4 || (!cfg.frames && !cfg.gif) {
+        let mp4_path = format!("{}/video.mp4", cfg.output_dir);
+        crate::utils::video_output::save_mp4_from_rgb_frames(&mp4_path, &frame_data, w, h, 25)?;
     }
 
     Ok(())

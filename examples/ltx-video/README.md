@@ -76,7 +76,9 @@ cargo run --example ltx-video --release --features flash-attn,cudnn -- \
 | `--output-dir` | Directory to save results | `"output"` |
 | `--vae-tiling` | Enable spatial VAE tiling | `false` |
 | `--vae-slicing` | Enable batch VAE slicing | `false` |
-| `--frames` | Save output as individual PNG frames (disables GIF) | `false` |
+| `--frames` | Save output as individual PNG frames | `false` |
+| `--gif` | Save output as GIF animation | `false` |
+| `--mp4` | Save output as MP4 video (requires `ffmpeg` on `PATH`) | Default |
 | `--seed` | Random seed for reproducibility | Random |
 | `--cpu` | Run on CPU instead of GPU | `false` |
 | `--model-id` | HF model ID (used to download tokenizer if missing) | `"Lightricks/LTX-Video"` |

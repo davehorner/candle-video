@@ -17,6 +17,7 @@ type GenerateOptions struct {
 	CPU            bool    `json:"cpu,omitempty"`
 	Seed           uint64  `json:"seed,omitempty"`
 	GIF            bool    `json:"gif,omitempty"`
+	MP4            bool    `json:"mp4,omitempty"`
 	Frames         bool    `json:"frames,omitempty"`
 	VAETiling      bool    `json:"vae_tiling,omitempty"`
 	VAESlicing     bool    `json:"vae_slicing,omitempty"`
@@ -54,7 +55,7 @@ func (o *GenerateOptions) normalize() {
 	if o.Steps == 0 {
 		o.Steps = 7
 	}
-	if !o.GIF && !o.Frames {
-		o.GIF = true
+	if !o.GIF && !o.Frames && !o.MP4 {
+		o.MP4 = true
 	}
 }

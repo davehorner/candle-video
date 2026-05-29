@@ -209,6 +209,7 @@ cargo run --example ltx-video --release --features flash-attn,cudnn -- \
 | `--vae-slicing` | false | Enable VAE batch slicing |
 | `--frames` | false | Save individual PNG frames |
 | `--gif` | false | Save as GIF animation |
+| `--mp4` | true | Save as MP4 video (requires `ffmpeg` on `PATH`) |
 | `--cpu` | false | Run on CPU instead of GPU |
 | `--use-bf16-t5` | false | Use BF16 T5 instead of GGUF quantized |
 | `--unified-weights` | (None) | Path to unified safetensors file |

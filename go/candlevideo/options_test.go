@@ -27,8 +27,11 @@ func TestGenerateOptionsNormalizeDefaults(t *testing.T) {
 	if opts.Steps != 7 {
 		t.Fatalf("unexpected default Steps: %d", opts.Steps)
 	}
-	if !opts.GIF {
-		t.Fatal("GIF should be enabled by default when GIF and Frames are both false")
+	if !opts.MP4 {
+		t.Fatal("MP4 should be enabled by default when no output mode is selected")
+	}
+	if opts.GIF {
+		t.Fatal("GIF should stay false by default")
 	}
 }
 
@@ -81,6 +84,18 @@ func TestGenerateOptionsNormalizeUsesGlobalModelPathOverride(t *testing.T) {
 
 	if opts.LocalWeights != "/models/ltx-video" {
 		t.Fatalf("expected LocalWeights from override, got %q", opts.LocalWeights)
+	}
+}
+
+func TestGenerateOptionsNormalizePreservesMP4OutputMode(t *testing.T) {
+	opts := GenerateOptions{MP4: true}
+	opts.normalize()
+
+	if !opts.MP4 {
+		t.Fatal("MP4 should stay enabled")
+	}
+	if opts.GIF {
+		t.Fatal("GIF should stay false when MP4 is true")
 	}
 }
 

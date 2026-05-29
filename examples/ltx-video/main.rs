@@ -64,6 +64,10 @@ struct Args {
     #[arg(long)]
     gif: bool,
 
+    /// Save as MP4 video (default, requires ffmpeg on PATH)
+    #[arg(long)]
+    mp4: bool,
+
     /// Use VAE tiling (spatial)
     #[arg(long, default_value_t = false)]
     vae_tiling: bool,
@@ -219,11 +223,17 @@ fn main() -> anyhow::Result<()> {
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
         now.as_secs() ^ (now.subsec_nanos() as u64)
     });
-    device.set_seed(seed)?;
+    // Some backends (notably CPU) do not support explicit seed configuration.
+    // Initial latents are generated below with a deterministic PCG seeded here.
+    let _ = device.set_seed(seed);
     println!("Device: {:?}", device);
     println!("Seed: {}", seed);
 
-    let dtype = DType::BF16;
+    let dtype = if device.is_cpu() {
+        DType::F32
+    } else {
+        DType::BF16
+    };
 
     // 1. Locate weights
     let (transformer_file, vae_file, t5_file, tokenizer_file) =
@@ -335,7 +345,7 @@ fn main() -> anyhow::Result<()> {
 
             // Determine if we should use unified weights based on version or repository
             let is_098 = args.ltxv_version.contains("0.9.8");
-            
+
             let (transformer, vae) = if is_098 {
                 println!("  Fetching unified weight file (official format)...");
                 let unified = repo.get("ltxv-2b-0.9.8-distilled.safetensors")?;
@@ -666,27 +676,20 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    // Exclusive mode: --frames saves ONLY frames
     if args.frames {
         for (j, data) in frame_data.iter().enumerate() {
             let filename = format!("{}/frame_{:04}.png", args.output_dir, j);
             image::save_buffer(&filename, data, w as u32, h as u32, image::ColorType::Rgb8)?;
         }
-        println!(
-            "\nDone! Saved {} frames to {}",
-            frame_data.len(),
-            args.output_dir
-        );
-        return Ok(());
+        println!("\nSaved {} frames to {}", frame_data.len(), args.output_dir);
     }
 
-    // Default or --gif: Save GIF
-    {
+    if args.gif {
         use gif::{Encoder, Repeat};
         use rayon::prelude::*;
         use std::fs::File;
 
-        println!("Creating GIF animation (default output, accelerated with rayon)...");
+        println!("Creating GIF animation...");
         let gif_path = format!("{}/video.gif", args.output_dir);
         let mut image_file = File::create(&gif_path)?;
         let mut encoder = Encoder::new(&mut image_file, w as u16, h as u16, &[])?;
@@ -707,6 +710,19 @@ fn main() -> anyhow::Result<()> {
             encoder.write_frame(&frame)?;
         }
         println!("\nDone! Saved GIF to {}", gif_path);
+    }
+
+    if args.mp4 || (!args.frames && !args.gif) {
+        println!("Creating MP4 video with ffmpeg...");
+        let mp4_path = format!("{}/video.mp4", args.output_dir);
+        candle_video::utils::video_output::save_mp4_from_rgb_frames(
+            &mp4_path,
+            &frame_data,
+            w,
+            h,
+            25,
+        )?;
+        println!("\nDone! Saved MP4 to {}", mp4_path);
     }
 
     Ok(())
