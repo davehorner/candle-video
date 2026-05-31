@@ -38,6 +38,9 @@ struct Args {
     #[arg(long, default_value_t = 97)]
     num_frames: usize,
 
+    #[arg(long, default_value_t = 25)]
+    fps: usize,
+
     #[arg(long, default_value = "0.9.8-2b-distilled")]
     ltxv_version: String,
 
@@ -720,7 +723,7 @@ fn main() -> anyhow::Result<()> {
             &frame_data,
             w,
             h,
-            25,
+            args.fps,
         )?;
         println!("\nDone! Saved MP4 to {}", mp4_path);
     }
